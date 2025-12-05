@@ -1,0 +1,128 @@
+from rest_framework import serializers
+
+
+class BlogViewsAnalyticsSerializer(serializers.Serializer):
+    """
+    Serializer for API #1: /analytics/blog-views/
+    Returns x, y, z structure for grouped blog views
+    """
+    x = serializers.CharField(help_text="Grouping key (user or country identifier)")
+    y = serializers.IntegerField(help_text="Number of blogs")
+    z = serializers.IntegerField(help_text="Total views")
+
+
+class TopAnalyticsSerializer(serializers.Serializer):
+    """
+    Serializer for API #2: /analytics/top/
+    Returns x, y, z structure for top 10 rankings
+    x, y, z meanings vary based on 'top' parameter
+    """
+    x = serializers.CharField(help_text="Primary identifier (username, country name, or blog title)")
+    y = serializers.CharField(help_text="Secondary data (blog count or author name)")
+    z = serializers.IntegerField(help_text="Total views")
+
+
+class PerformanceAnalyticsSerializer(serializers.Serializer):
+    """
+    Serializer for API #3: /analytics/performance/
+    Returns x, y, z structure for time-series performance
+    """
+    x = serializers.CharField(help_text="Period label with blog count (e.g., '2024-01 (5 blogs)')")
+    y = serializers.IntegerField(help_text="Views during the period")
+    z = serializers.FloatField(help_text="Growth/decline percentage vs previous period")
+
+
+class ErrorResponseSerializer(serializers.Serializer):
+    """Serializer for error responses"""
+    error = serializers.CharField()
+    detail = serializers.CharField(required=False)
+
+
+class FilterRequestSerializer(serializers.Serializer):
+    """
+    Serializer to validate filter query parameters
+    Supports: and, or, not, eq operators
+    """
+    filters = serializers.JSONField(
+        required=False,
+        help_text="Dynamic filters in JSON format. Supports 'and', 'or', 'not', 'eq' operators"
+    )
+
+
+class BlogViewsRequestSerializer(serializers.Serializer):
+    """Request parameter validation for blog-views endpoint"""
+    object_type = serializers.ChoiceField(
+        choices=['country', 'user'],
+        required=True,
+        help_text="Group by country or user"
+    )
+    range = serializers.ChoiceField(
+        choices=['month', 'week', 'year', 'day'],
+        required=False,
+        default='month',
+        help_text="Time range for filtering"
+    )
+    filters = serializers.JSONField(
+        required=False,
+        help_text="Dynamic filters in JSON format"
+    )
+    start_date = serializers.DateTimeField(
+        required=False,
+        help_text="Start date for time range (ISO 8601 format)"
+    )
+    end_date = serializers.DateTimeField(
+        required=False,
+        help_text="End date for time range (ISO 8601 format)"
+    )
+
+
+class TopAnalyticsRequestSerializer(serializers.Serializer):
+    """Request parameter validation for top analytics endpoint"""
+    top = serializers.ChoiceField(
+        choices=['user', 'country', 'blog'],
+        required=True,
+        help_text="Get top 10 by user, country, or blog"
+    )
+    range = serializers.ChoiceField(
+        choices=['month', 'week', 'year', 'day', 'all'],
+        required=False,
+        default='all',
+        help_text="Time range for filtering"
+    )
+    filters = serializers.JSONField(
+        required=False,
+        help_text="Dynamic filters in JSON format"
+    )
+    start_date = serializers.DateTimeField(
+        required=False,
+        help_text="Start date for time range (ISO 8601 format)"
+    )
+    end_date = serializers.DateTimeField(
+        required=False,
+        help_text="End date for time range (ISO 8601 format)"
+    )
+
+
+class PerformanceRequestSerializer(serializers.Serializer):
+    """Request parameter validation for performance endpoint"""
+    compare = serializers.ChoiceField(
+        choices=['month', 'week', 'day', 'year'],
+        required=True,
+        help_text="Compare performance by time period"
+    )
+    user_id = serializers.IntegerField(
+        required=False,
+        help_text="Specific user ID (omit for all users)"
+    )
+    filters = serializers.JSONField(
+        required=False,
+        help_text="Dynamic filters in JSON format"
+    )
+    start_date = serializers.DateTimeField(
+        required=False,
+        help_text="Start date for analysis (ISO 8601 format)"
+    )
+    end_date = serializers.DateTimeField(
+        required=False,
+        help_text="End date for analysis (ISO 8601 format)"
+    )
