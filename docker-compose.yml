@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # Database Service
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  # Redis Service (Cache & Broker)
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  # Web Service
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${POSTGRES_PASSWORD}@db:5432/${DB_NAME}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
