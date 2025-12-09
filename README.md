@@ -2,6 +2,8 @@
 
 Advanced analytics APIs built with Django REST Framework, featuring dynamic filtering and optimized database queries.
 
+> **Quick Start:** See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide!
+
 ## 🎯 Features
 
 - **3 Analytics APIs** with complex aggregation and time-series analysis
@@ -237,6 +239,8 @@ All endpoints support dynamic filtering with JSON-based filters.
 - Python 3.8+
 - pip
 - virtualenv (recommended)
+- **Redis** (required for Celery and caching) - See [REDIS_SETUP.md](REDIS_SETUP.md) for installation
+- PostgreSQL (optional, SQLite works for development)
 
 ### Installation Steps
 
@@ -281,13 +285,45 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
 ```
 
-5. **Run migrations:**
+5. **Install and start Redis:**
+
+**Windows:**
+```bash
+# Download Redis from https://github.com/microsoftarchive/redis/releases
+# Or use Docker:
+docker run -d -p 6379:6379 redis:7
+```
+
+**Linux/Mac:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install redis-server
+sudo systemctl start redis
+
+# macOS
+brew install redis
+brew services start redis
+
+# Or use Docker:
+docker run -d -p 6379:6379 redis:7
+```
+
+**Verify Redis is running:**
+```bash
+redis-cli ping
+# Should return: PONG
+
+# Or use the provided test script
+python test_redis_connection.py
+```
+
+6. **Run migrations:**
 
 ```bash
 python manage.py migrate
 ```
 
-5. **Create sample data (optional):**
+7. **Create sample data (optional):**
 
 ```bash
 python manage.py shell
@@ -340,7 +376,7 @@ for blog in blogs:
 print(f"Created {len(users)} users, {len(blogs)} blogs, and {BlogView.objects.count()} views")
 ```
 
-6. **Run development server:**
+8. **Run development server:**
 
 ```bash
 # Uses local settings by default (configured in manage.py)
@@ -352,11 +388,46 @@ python manage.py runserver --settings=ideeza_assessment.settings.local
 
 The API will be available at `http://localhost:8000/analytics/`
 
-7. **Run Celery worker (optional):**
+9. **Run Celery worker (optional, for async tasks):**
 
 ```bash
+# Windows
+celery -A ideeza_assessment worker -l info --pool=solo
+
+# Linux/Mac
 celery -A ideeza_assessment worker -l info
 ```
+
+10. **Run Celery Beat (optional, for scheduled tasks):**
+
+```bash
+celery -A ideeza_assessment beat -l info
+```
+
+---
+
+## 🐳 Docker Setup (Alternative)
+
+If you prefer using Docker, you can run the entire stack with one command:
+
+```bash
+# Start all services (PostgreSQL, Redis, Web)
+docker-compose up -d
+
+# Run migrations
+docker-compose exec web python manage.py migrate
+
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
+
+# View logs
+docker-compose logs -f web
+
+# Stop all services
+docker-compose down
+```
+
+The API will be available at `http://localhost:8000/analytics/`
 
 ---
 
@@ -414,7 +485,14 @@ The project uses a **service layer architecture** to separate business logic fro
 - **`services.py`** - Business logic and analytics functions
 - **`views.py`** - HTTP request/response handling
 - **`serializers.py`** - Request validation and response serialization
-- **`tests.py`** - Comprehensive test coverage
+- **`tests/`** - Comprehensive test coverage
+
+### Infrastructure
+
+- **Redis**: Used for Celery message broker, result backend, and Django caching
+- **Celery**: Async task processing and scheduled jobs (django-celery-beat)
+- **PostgreSQL/SQLite**: Primary database (PostgreSQL for production, SQLite for dev)
+- **Docker**: Optional containerized deployment with docker-compose
 
 ### Database Optimization
 
@@ -470,12 +548,17 @@ IDEEZA-Assessment/
 │   ├── base.txt            # Core dependencies
 │   ├── local.txt           # Development dependencies
 │   └── production.txt      # Production dependencies
-├── manage.py               # Django management script
-├── .env                    # Environment variables
-├── db.sqlite3              # SQLite database
-├── docker-compose.yml      # Docker configuration
-├── Dockerfile              # Docker image definition
-└── README.md               # This file
+├── manage.py                   # Django management script
+├── .env                        # Environment variables
+├── db.sqlite3                  # SQLite database
+├── docker-compose.yml          # Docker configuration (includes Redis & PostgreSQL)
+├── Dockerfile                  # Docker image definition
+├── test_redis_connection.py    # Redis connection test script
+├── README.md                   # Main documentation
+├── QUICKSTART.md               # 5-minute setup guide
+├── PAGINATION.md               # Pagination feature documentation
+├── REDIS_SETUP.md              # Redis installation and setup guide
+└── SETUP_CHECKLIST.md          # Complete setup verification checklist
 ```
 
 ---
@@ -518,6 +601,17 @@ IDEEZA-Assessment/
 
 **Backend Developer Assessment**  
 IDEEZA - Senior Backend Developer Position
+
+---
+
+## 📚 Additional Documentation
+
+- [QUICKSTART.md](QUICKSTART.md) - 5-minute setup guide
+- [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) - Complete setup verification checklist
+- [PAGINATION.md](PAGINATION.md) - Detailed pagination feature documentation
+- [REDIS_SETUP.md](REDIS_SETUP.md) - Redis installation and configuration guide
+- [BUG_ANALYSIS.md](BUG_ANALYSIS.md) - Analysis of common bugs and how they're avoided
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Complete implementation overview
 
 ---
 
