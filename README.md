@@ -5,6 +5,7 @@ Advanced analytics APIs built with Django REST Framework, featuring dynamic filt
 ## 🎯 Features
 
 - **3 Analytics APIs** with complex aggregation and time-series analysis
+- **Pagination Support** with count, page, page_size, and total_pages metadata
 - **Dynamic Filter System** supporting `and`, `or`, `not`, and `eq` operators
 - **ORM Optimization** using `select_related`, `prefetch_related`, and efficient aggregation
 - **Comprehensive Tests** covering services, views, and edge cases
@@ -25,17 +26,25 @@ Groups blogs and views by country or user with time range filtering.
 - `start_date` (optional): ISO 8601 format
 - `end_date` (optional): ISO 8601 format
 - `filters` (optional): JSON object with dynamic filters
+- `page` (optional): Page number (default: 1)
+- `page_size` (optional): Items per page (default: 10, max: 100)
 
 **Response Structure:**
 
 ```json
-[
-  {
-    "x": "USA",           // Grouping key (country name or username)
-    "y": 15,              // Number of blogs
-    "z": 245              // Total views
-  }
-]
+{
+  "count": 25,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 3,
+  "results": [
+    {
+      "x": "USA",           // Grouping key (country name or username)
+      "y": 15,              // Number of blogs
+      "z": 245              // Total views
+    }
+  ]
+}
 ```
 
 **Example Requests:**
@@ -46,6 +55,9 @@ GET /analytics/blog-views/?object_type=country&range=month
 
 # Group by user for the current week
 GET /analytics/blog-views/?object_type=user&range=week
+
+# With pagination
+GET /analytics/blog-views/?object_type=country&range=month&page=1&page_size=20
 
 # With dynamic filters
 GET /analytics/blog-views/?object_type=country&filters={"eq":{"country__name":"USA"}}
@@ -64,44 +76,32 @@ Returns Top 10 users, countries, or blogs based on total views.
 - `start_date` (optional): ISO 8601 format
 - `end_date` (optional): ISO 8601 format
 - `filters` (optional): JSON object with dynamic filters
+- `page` (optional): Page number (default: 1)
+- `page_size` (optional): Items per page (default: 10, max: 100)
 
-**Response Structure varies by `top` parameter:**
-
-**top=user:**
-
-```json
-[
-  {
-    "x": "john_doe",      // Username
-    "y": "25",            // Blog count (string)
-    "z": 1532             // Total views
-  }
-]
-```
-
-**top=country:**
+**Response Structure:**
 
 ```json
-[
-  {
-    "x": "USA",           // Country name
-    "y": "142",           // Blog count (string)
-    "z": 5423             // Total views
-  }
-]
+{
+  "count": 50,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 5,
+  "results": [
+    {
+      "x": "john_doe",      // Username / Country / Blog title
+      "y": "25",            // Blog count / Author username
+      "z": 1532             // Total views
+    }
+  ]
+}
 ```
 
-**top=blog:**
+**Response data varies by `top` parameter:**
 
-```json
-[
-  {
-    "x": "My Awesome Blog", // Blog title
-    "y": "jane_smith",      // Author username
-    "z": 892                // Total views
-  }
-]
-```
+- **top=user:** `{x: username, y: blog_count, z: total_views}`
+- **top=country:** `{x: country_name, y: blog_count, z: total_views}`
+- **top=blog:** `{x: blog_title, y: author_username, z: total_views}`
 
 **Example Requests:**
 
@@ -112,8 +112,8 @@ GET /analytics/top/?top=user&range=all
 # Top 10 countries (this month)
 GET /analytics/top/?top=country&range=month
 
-# Top 10 blogs (this week)
-GET /analytics/top/?top=blog&range=week
+# Top 10 blogs (this week) with pagination
+GET /analytics/top/?top=blog&range=week&page=1&page_size=5
 ```
 
 ---
@@ -129,17 +129,25 @@ Time-series performance with period-over-period growth analysis.
 - `start_date` (optional): ISO 8601 format
 - `end_date` (optional): ISO 8601 format
 - `filters` (optional): JSON object with dynamic filters
+- `page` (optional): Page number (default: 1)
+- `page_size` (optional): Items per page (default: 10, max: 100)
 
 **Response Structure:**
 
 ```json
-[
-  {
-    "x": "2024-01 (15 blogs)",  // Period label with blog count
-    "y": 423,                    // Views during period
-    "z": 12.5                    // Growth percentage vs previous period
-  }
-]
+{
+  "count": 12,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 2,
+  "results": [
+    {
+      "x": "2024-01 (15 blogs)",  // Period label with blog count
+      "y": 423,                    // Views during period
+      "z": 12.5                    // Growth percentage vs previous period
+    }
+  ]
+}
 ```
 
 **Example Requests:**
@@ -151,8 +159,8 @@ GET /analytics/performance/?compare=month
 # Weekly performance for specific user
 GET /analytics/performance/?compare=week&user_id=5
 
-# Daily performance with date range
-GET /analytics/performance/?compare=day&start_date=2024-01-01&end_date=2024-01-31
+# Daily performance with date range and pagination
+GET /analytics/performance/?compare=day&start_date=2024-01-01&end_date=2024-01-31&page=1&page_size=15
 ```
 
 ---
@@ -254,10 +262,26 @@ source venv/bin/activate
 3. **Install dependencies:**
 
 ```bash
-pip install -r requirements.txt
+# For local development
+pip install -r requirements/local.txt
+
+# For production
+pip install -r requirements/production.txt
 ```
 
-4. **Run migrations:**
+4. **Configure environment variables:**
+
+Create a `.env` file in the project root:
+
+```env
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+DATABASE_URL=sqlite:///db.sqlite3
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+```
+
+5. **Run migrations:**
 
 ```bash
 python manage.py migrate
@@ -319,10 +343,20 @@ print(f"Created {len(users)} users, {len(blogs)} blogs, and {BlogView.objects.co
 6. **Run development server:**
 
 ```bash
+# Uses local settings by default (configured in manage.py)
 python manage.py runserver
+
+# Or explicitly specify settings
+python manage.py runserver --settings=ideeza_assessment.settings.local
 ```
 
 The API will be available at `http://localhost:8000/analytics/`
+
+7. **Run Celery worker (optional):**
+
+```bash
+celery -A ideeza_assessment worker -l info
+```
 
 ---
 
@@ -331,31 +365,40 @@ The API will be available at `http://localhost:8000/analytics/`
 ### Run all tests:
 
 ```bash
-python manage.py test analytics
+python manage.py test analytics.tests
+```
+
+### Run specific test modules:
+
+```bash
+# Service layer tests
+python manage.py test analytics.tests.test_services
+
+# API endpoint tests
+python manage.py test analytics.tests.test_views
 ```
 
 ### Run specific test classes:
 
 ```bash
 # Service layer tests
-python manage.py test analytics.tests.TestBlogViewsAnalyticsService
-python manage.py test analytics.tests.TestTopAnalyticsService
-python manage.py test analytics.tests.TestPerformanceAnalyticsService
+python manage.py test analytics.tests.test_services.TestBlogViewsAnalyticsService
+python manage.py test analytics.tests.test_services.TestTopAnalyticsService
+python manage.py test analytics.tests.test_services.TestPerformanceAnalyticsService
 
 # Dynamic filter tests
-python manage.py test analytics.tests.TestDynamicFilters
+python manage.py test analytics.tests.test_services.TestDynamicFilters
 
 # API endpoint tests
-python manage.py test analytics.tests.TestBlogViewsAnalyticsView
-python manage.py test analytics.tests.TestTopAnalyticsView
-python manage.py test analytics.tests.TestPerformanceAnalyticsView
+python manage.py test analytics.tests.test_views.TestBlogViewsAnalyticsView
+python manage.py test analytics.tests.test_views.TestTopAnalyticsView
+python manage.py test analytics.tests.test_views.TestPerformanceAnalyticsView
 ```
 
 ### Test with coverage:
 
 ```bash
-pip install coverage
-coverage run --source='analytics' manage.py test analytics
+coverage run --source='analytics' manage.py test analytics.tests
 coverage report
 ```
 
@@ -402,20 +445,36 @@ queryset = BlogView.objects.select_related(
 ```
 IDEEZA-Assessment/
 ├── analytics/
+│   ├── migrations/         # Database migrations
+│   ├── tests/              # Organized test suite
+│   │   ├── __init__.py
+│   │   ├── test_services.py    # Service layer tests
+│   │   └── test_views.py       # API endpoint tests
 │   ├── models.py           # Database models
 │   ├── services.py         # Business logic layer
 │   ├── views.py            # API views
 │   ├── serializers.py      # Request/response serializers
 │   ├── urls.py             # Analytics URL routing
-│   ├── tests.py            # Comprehensive tests
 │   └── admin.py            # Django admin configuration
 ├── ideeza_assessment/
-│   ├── settings.py         # Django settings
+│   ├── settings/           # Split settings for environments
+│   │   ├── base.py         # Common settings
+│   │   ├── local.py        # Development settings
+│   │   └── production.py   # Production settings
+│   ├── celery.py           # Celery configuration
 │   ├── urls.py             # Main URL configuration
-│   └── wsgi.py             # WSGI configuration
+│   ├── wsgi.py             # WSGI configuration
+│   ├── asgi.py             # ASGI configuration
+│   └── __init__.py         # Celery app initialization
+├── requirements/           # Organized dependencies
+│   ├── base.txt            # Core dependencies
+│   ├── local.txt           # Development dependencies
+│   └── production.txt      # Production dependencies
 ├── manage.py               # Django management script
-├── requirements.txt        # Python dependencies
+├── .env                    # Environment variables
 ├── db.sqlite3              # SQLite database
+├── docker-compose.yml      # Docker configuration
+├── Dockerfile              # Docker image definition
 └── README.md               # This file
 ```
 
@@ -424,17 +483,21 @@ IDEEZA-Assessment/
 ## 🎓 Technical Highlights
 
 1. **Dynamic Filtering System** - Recursive Q object builder supporting complex filter combinations
-2. **Time-Series Analytics** - Period-based aggregation with growth calculations
-3. **ORM Optimization** - Strategic use of select_related/prefetch_related
-4. **Comprehensive Testing** - Unit tests, integration tests, edge cases
-5. **Clean Architecture** - Service layer pattern for maintainability
-6. **Type Safety** - Request validation with DRF serializers
+2. **Pagination** - Built-in pagination with count and metadata for all endpoints
+3. **Time-Series Analytics** - Period-based aggregation with growth calculations
+4. **ORM Optimization** - Strategic use of select_related/prefetch_related
+5. **Comprehensive Testing** - Unit tests, integration tests, edge cases, pagination tests
+6. **Clean Architecture** - Service layer pattern for maintainability
+7. **Type Safety** - Request validation with DRF serializers
+8. **Senior-Level Structure** - Split settings, organized requirements, Celery integration
+9. **Environment Management** - Separate configurations for local/production environments
 
 ---
 
 ## 📝 Requirements Met
 
 ✅ Three analytics APIs with x, y, z output structure  
+✅ Pagination with count and metadata on all endpoints  
 ✅ Dynamic filtering with and/or/not/eq operators  
 ✅ Multi-table filtering support  
 ✅ Time-series aggregation and comparison  
@@ -442,7 +505,12 @@ IDEEZA-Assessment/
 ✅ N+1 query prevention  
 ✅ Comprehensive test coverage  
 ✅ Clean service layer architecture  
-✅ Full documentation with examples
+✅ Full documentation with examples  
+✅ Senior-level project structure  
+✅ Split settings (base/local/production)  
+✅ Organized requirements directory  
+✅ Celery integration for async tasks  
+✅ Organized test suite structure
 
 ---
 

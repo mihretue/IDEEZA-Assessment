@@ -2,6 +2,7 @@
 Analytics API Views
 Expose analytics services through REST API endpoints
 """
+import math
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,8 +21,40 @@ from .serializers import (
     TopAnalyticsRequestSerializer,
     PerformanceAnalyticsSerializer,
     PerformanceRequestSerializer,
-    ErrorResponseSerializer
+    ErrorResponseSerializer,
+    PaginatedResponseSerializer
 )
+
+
+def paginate_results(results, page, page_size):
+    """
+    Helper function to paginate results
+    
+    Args:
+        results: List of results to paginate
+        page: Current page number (1-indexed)
+        page_size: Number of items per page
+    
+    Returns:
+        Dictionary with pagination metadata and paginated results
+    """
+    total_count = len(results)
+    total_pages = math.ceil(total_count / page_size) if page_size > 0 else 0
+    
+    # Calculate start and end indices
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
+    # Get paginated results
+    paginated_results = results[start_idx:end_idx]
+    
+    return {
+        'count': total_count,
+        'page': page,
+        'page_size': page_size,
+        'total_pages': total_pages,
+        'results': paginated_results
+    }
 
 
 class BlogViewsAnalyticsView(APIView):
@@ -43,7 +76,7 @@ class BlogViewsAnalyticsView(APIView):
     @extend_schema(
         parameters=[BlogViewsRequestSerializer],
         responses={
-            200: BlogViewsAnalyticsSerializer(many=True),
+            200: PaginatedResponseSerializer,
             400: ErrorResponseSerializer
         }
     )
@@ -68,9 +101,15 @@ class BlogViewsAnalyticsView(APIView):
                 end_date=validated_data.get('end_date')
             )
             
-            # Serialize and return response
+            # Serialize results
             response_serializer = BlogViewsAnalyticsSerializer(results, many=True)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
+            # Paginate results
+            page = validated_data.get('page', 1)
+            page_size = validated_data.get('page_size', 10)
+            paginated_data = paginate_results(response_serializer.data, page, page_size)
+            
+            return Response(paginated_data, status=status.HTTP_200_OK)
         
         except ValueError as e:
             return Response(
@@ -106,7 +145,7 @@ class TopAnalyticsView(APIView):
     @extend_schema(
         parameters=[TopAnalyticsRequestSerializer],
         responses={
-            200: TopAnalyticsSerializer(many=True),
+            200: PaginatedResponseSerializer,
             400: ErrorResponseSerializer
         }
     )
@@ -131,9 +170,15 @@ class TopAnalyticsView(APIView):
                 end_date=validated_data.get('end_date')
             )
             
-            # Serialize and return response
+            # Serialize results
             response_serializer = TopAnalyticsSerializer(results, many=True)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
+            # Paginate results
+            page = validated_data.get('page', 1)
+            page_size = validated_data.get('page_size', 10)
+            paginated_data = paginate_results(response_serializer.data, page, page_size)
+            
+            return Response(paginated_data, status=status.HTTP_200_OK)
         
         except ValueError as e:
             return Response(
@@ -166,7 +211,7 @@ class PerformanceAnalyticsView(APIView):
     @extend_schema(
         parameters=[PerformanceRequestSerializer],
         responses={
-            200: PerformanceAnalyticsSerializer(many=True),
+            200: PaginatedResponseSerializer,
             400: ErrorResponseSerializer
         }
     )
@@ -191,9 +236,15 @@ class PerformanceAnalyticsView(APIView):
                 end_date=validated_data.get('end_date')
             )
             
-            # Serialize and return response
+            # Serialize results
             response_serializer = PerformanceAnalyticsSerializer(results, many=True)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+            
+            # Paginate results
+            page = validated_data.get('page', 1)
+            page_size = validated_data.get('page_size', 10)
+            paginated_data = paginate_results(response_serializer.data, page, page_size)
+            
+            return Response(paginated_data, status=status.HTTP_200_OK)
         
         except ValueError as e:
             return Response(

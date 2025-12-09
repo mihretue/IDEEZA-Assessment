@@ -1,6 +1,17 @@
 from rest_framework import serializers
 
 
+class PaginatedResponseSerializer(serializers.Serializer):
+    """
+    Wrapper for paginated responses with count and results
+    """
+    count = serializers.IntegerField(help_text="Total number of results")
+    page = serializers.IntegerField(help_text="Current page number")
+    page_size = serializers.IntegerField(help_text="Number of items per page")
+    total_pages = serializers.IntegerField(help_text="Total number of pages")
+    results = serializers.ListField(help_text="Paginated results")
+
+
 class BlogViewsAnalyticsSerializer(serializers.Serializer):
     """
     Serializer for API #1: /analytics/blog-views/
@@ -74,6 +85,19 @@ class BlogViewsRequestSerializer(serializers.Serializer):
         required=False,
         help_text="End date for time range (ISO 8601 format)"
     )
+    page = serializers.IntegerField(
+        required=False,
+        default=1,
+        min_value=1,
+        help_text="Page number (default: 1)"
+    )
+    page_size = serializers.IntegerField(
+        required=False,
+        default=10,
+        min_value=1,
+        max_value=100,
+        help_text="Items per page (default: 10, max: 100)"
+    )
 
 
 class TopAnalyticsRequestSerializer(serializers.Serializer):
@@ -101,6 +125,19 @@ class TopAnalyticsRequestSerializer(serializers.Serializer):
         required=False,
         help_text="End date for time range (ISO 8601 format)"
     )
+    page = serializers.IntegerField(
+        required=False,
+        default=1,
+        min_value=1,
+        help_text="Page number (default: 1)"
+    )
+    page_size = serializers.IntegerField(
+        required=False,
+        default=10,
+        min_value=1,
+        max_value=100,
+        help_text="Items per page (default: 10, max: 100)"
+    )
 
 
 class PerformanceRequestSerializer(serializers.Serializer):
@@ -125,4 +162,17 @@ class PerformanceRequestSerializer(serializers.Serializer):
     end_date = serializers.DateTimeField(
         required=False,
         help_text="End date for analysis (ISO 8601 format)"
+    )
+    page = serializers.IntegerField(
+        required=False,
+        default=1,
+        min_value=1,
+        help_text="Page number (default: 1)"
+    )
+    page_size = serializers.IntegerField(
+        required=False,
+        default=10,
+        min_value=1,
+        max_value=100,
+        help_text="Items per page (default: 10, max: 100)"
     )
