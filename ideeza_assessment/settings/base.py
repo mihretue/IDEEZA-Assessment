@@ -115,12 +115,15 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': int(os.getenv('API_PAGE_SIZE', 100)),
+    'DEFAULT_AUTHENTICATION_CLASSES': [],  # No authentication required
+    'DEFAULT_PERMISSION_CLASSES': [],  # Public API
 }
 
 # Spectacular Configuration
 SPECTACULAR_SETTINGS = {
     'TITLE': 'IDEEZA Analytics API',
-    'DESCRIPTION': 'Senior Backend Assessment API',
+    'DESCRIPTION': 'Senior Backend Assessment API - Public Analytics APIs',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [],  # No authentication required
 }

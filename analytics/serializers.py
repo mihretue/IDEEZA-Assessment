@@ -73,17 +73,21 @@ class BlogViewsRequestSerializer(serializers.Serializer):
         default='month',
         help_text="Time range for filtering"
     )
+    date_start = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="Start date for time range (ISO 8601 format) - Use date picker"
+    )
+    date_end = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="End date for time range (ISO 8601 format) - Use date picker"
+    )
     filters = serializers.JSONField(
         required=False,
         help_text="Dynamic filters in JSON format"
-    )
-    start_date = serializers.DateTimeField(
-        required=False,
-        help_text="Start date for time range (ISO 8601 format)"
-    )
-    end_date = serializers.DateTimeField(
-        required=False,
-        help_text="End date for time range (ISO 8601 format)"
     )
     page = serializers.IntegerField(
         required=False,
@@ -113,17 +117,21 @@ class TopAnalyticsRequestSerializer(serializers.Serializer):
         default='all',
         help_text="Time range for filtering"
     )
+    date_start = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="Start date for time range (ISO 8601 format) - Use date picker"
+    )
+    date_end = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="End date for time range (ISO 8601 format) - Use date picker"
+    )
     filters = serializers.JSONField(
         required=False,
         help_text="Dynamic filters in JSON format"
-    )
-    start_date = serializers.DateTimeField(
-        required=False,
-        help_text="Start date for time range (ISO 8601 format)"
-    )
-    end_date = serializers.DateTimeField(
-        required=False,
-        help_text="End date for time range (ISO 8601 format)"
     )
     page = serializers.IntegerField(
         required=False,
@@ -151,17 +159,21 @@ class PerformanceRequestSerializer(serializers.Serializer):
         required=False,
         help_text="Specific user ID (omit for all users)"
     )
+    date_start = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="Start date for analysis (ISO 8601 format) - Use date picker"
+    )
+    date_end = serializers.DateTimeField(
+        required=False,
+        format='iso-8601',
+        input_formats=['iso-8601'],
+        help_text="End date for analysis (ISO 8601 format) - Use date picker"
+    )
     filters = serializers.JSONField(
         required=False,
         help_text="Dynamic filters in JSON format"
-    )
-    start_date = serializers.DateTimeField(
-        required=False,
-        help_text="Start date for analysis (ISO 8601 format)"
-    )
-    end_date = serializers.DateTimeField(
-        required=False,
-        help_text="End date for analysis (ISO 8601 format)"
     )
     page = serializers.IntegerField(
         required=False,

@@ -1,17 +1,21 @@
 # IDEEZA Backend Developer Assessment
 
-Advanced analytics APIs built with Django REST Framework, featuring dynamic filtering and optimized database queries.
+Advanced analytics APIs built with Django REST Framework, featuring dynamic filtering, pagination, and optimized database queries.
 
-> **Quick Start:** See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide!
+> **Installation:** See [INSTALLATION.md](INSTALLATION.md) for complete setup instructions.
+
+---
 
 ## 🎯 Features
 
 - **3 Analytics APIs** with complex aggregation and time-series analysis
+- **Interactive API Documentation** (Swagger UI / ReDoc)
 - **Pagination Support** with count, page, page_size, and total_pages metadata
 - **Dynamic Filter System** supporting `and`, `or`, `not`, and `eq` operators
 - **ORM Optimization** using `select_related`, `prefetch_related`, and efficient aggregation
 - **Comprehensive Tests** covering services, views, and edge cases
 - **N+1 Query Prevention** through strategic database query optimization
+- **Senior-Level Architecture** with split settings, Celery integration, and Docker support
 
 ---
 
@@ -22,7 +26,6 @@ Advanced analytics APIs built with Django REST Framework, featuring dynamic filt
 Groups blogs and views by country or user with time range filtering.
 
 **Query Parameters:**
-
 - `object_type` (required): `country` or `user`
 - `range` (optional): `day`, `week`, `month`, or `year` (default: `month`)
 - `start_date` (optional): ISO 8601 format
@@ -32,7 +35,6 @@ Groups blogs and views by country or user with time range filtering.
 - `page_size` (optional): Items per page (default: 10, max: 100)
 
 **Response Structure:**
-
 ```json
 {
   "count": 25,
@@ -41,25 +43,21 @@ Groups blogs and views by country or user with time range filtering.
   "total_pages": 3,
   "results": [
     {
-      "x": "USA",           // Grouping key (country name or username)
-      "y": 15,              // Number of blogs
-      "z": 245              // Total views
+      "x": "USA",
+      "y": 15,
+      "z": 245
     }
   ]
 }
 ```
 
 **Example Requests:**
-
 ```bash
 # Group by country for the current month
 GET /analytics/blog-views/?object_type=country&range=month
 
-# Group by user for the current week
-GET /analytics/blog-views/?object_type=user&range=week
-
-# With pagination
-GET /analytics/blog-views/?object_type=country&range=month&page=1&page_size=20
+# Group by user with pagination
+GET /analytics/blog-views/?object_type=user&range=week&page=1&page_size=20
 
 # With dynamic filters
 GET /analytics/blog-views/?object_type=country&filters={"eq":{"country__name":"USA"}}
@@ -72,7 +70,6 @@ GET /analytics/blog-views/?object_type=country&filters={"eq":{"country__name":"U
 Returns Top 10 users, countries, or blogs based on total views.
 
 **Query Parameters:**
-
 - `top` (required): `user`, `country`, or `blog`
 - `range` (optional): `day`, `week`, `month`, `year`, or `all` (default: `all`)
 - `start_date` (optional): ISO 8601 format
@@ -82,7 +79,6 @@ Returns Top 10 users, countries, or blogs based on total views.
 - `page_size` (optional): Items per page (default: 10, max: 100)
 
 **Response Structure:**
-
 ```json
 {
   "count": 50,
@@ -91,22 +87,20 @@ Returns Top 10 users, countries, or blogs based on total views.
   "total_pages": 5,
   "results": [
     {
-      "x": "john_doe",      // Username / Country / Blog title
-      "y": "25",            // Blog count / Author username
-      "z": 1532             // Total views
+      "x": "john_doe",
+      "y": "25",
+      "z": 1532
     }
   ]
 }
 ```
 
 **Response data varies by `top` parameter:**
-
 - **top=user:** `{x: username, y: blog_count, z: total_views}`
 - **top=country:** `{x: country_name, y: blog_count, z: total_views}`
 - **top=blog:** `{x: blog_title, y: author_username, z: total_views}`
 
 **Example Requests:**
-
 ```bash
 # Top 10 users (all time)
 GET /analytics/top/?top=user&range=all
@@ -114,7 +108,7 @@ GET /analytics/top/?top=user&range=all
 # Top 10 countries (this month)
 GET /analytics/top/?top=country&range=month
 
-# Top 10 blogs (this week) with pagination
+# Top 10 blogs with pagination
 GET /analytics/top/?top=blog&range=week&page=1&page_size=5
 ```
 
@@ -125,7 +119,6 @@ GET /analytics/top/?top=blog&range=week&page=1&page_size=5
 Time-series performance with period-over-period growth analysis.
 
 **Query Parameters:**
-
 - `compare` (required): `day`, `week`, `month`, or `year`
 - `user_id` (optional): Specific user ID (omit for all users)
 - `start_date` (optional): ISO 8601 format
@@ -135,7 +128,6 @@ Time-series performance with period-over-period growth analysis.
 - `page_size` (optional): Items per page (default: 10, max: 100)
 
 **Response Structure:**
-
 ```json
 {
   "count": 12,
@@ -144,16 +136,15 @@ Time-series performance with period-over-period growth analysis.
   "total_pages": 2,
   "results": [
     {
-      "x": "2024-01 (15 blogs)",  // Period label with blog count
-      "y": 423,                    // Views during period
-      "z": 12.5                    // Growth percentage vs previous period
+      "x": "2024-01 (15 blogs)",
+      "y": 423,
+      "z": 12.5
     }
   ]
 }
 ```
 
 **Example Requests:**
-
 ```bash
 # Monthly performance for all users
 GET /analytics/performance/?compare=month
@@ -161,9 +152,19 @@ GET /analytics/performance/?compare=month
 # Weekly performance for specific user
 GET /analytics/performance/?compare=week&user_id=5
 
-# Daily performance with date range and pagination
-GET /analytics/performance/?compare=day&start_date=2024-01-01&end_date=2024-01-31&page=1&page_size=15
+# Daily performance with pagination
+GET /analytics/performance/?compare=day&page=1&page_size=15
 ```
+
+---
+
+## 📖 API Documentation
+
+Interactive API documentation is available:
+
+- **Swagger UI:** http://localhost:8000/api/docs/ (Interactive testing)
+- **ReDoc:** http://localhost:8000/api/redoc/ (Clean documentation)
+- **OpenAPI Schema:** http://localhost:8000/api/schema/ (JSON schema)
 
 ---
 
@@ -172,22 +173,19 @@ GET /analytics/performance/?compare=day&start_date=2024-01-01&end_date=2024-01-3
 All endpoints support dynamic filtering with JSON-based filters.
 
 **Operators:**
-
 - `eq` - Equality check
 - `and` - Logical AND
 - `or` - Logical OR
 - `not` - Logical NOT
 
-**Filter Examples:**
+**Examples:**
 
 **Simple equality:**
-
 ```json
 {"eq": {"country__name": "USA"}}
 ```
 
 **AND operator:**
-
 ```json
 {
   "and": [
@@ -198,7 +196,6 @@ All endpoints support dynamic filtering with JSON-based filters.
 ```
 
 **OR operator:**
-
 ```json
 {
   "or": [
@@ -209,13 +206,11 @@ All endpoints support dynamic filtering with JSON-based filters.
 ```
 
 **NOT operator:**
-
 ```json
 {"not": {"eq": {"blog__title": "Exclude This"}}}
 ```
 
 **Nested filters:**
-
 ```json
 {
   "and": [
@@ -232,243 +227,34 @@ All endpoints support dynamic filtering with JSON-based filters.
 
 ---
 
-## 🚀 Installation & Setup
-
-### Prerequisites
-
-- Python 3.8+
-- pip
-- virtualenv (recommended)
-- **Redis** (required for Celery and caching) - See [REDIS_SETUP.md](REDIS_SETUP.md) for installation
-- PostgreSQL (optional, SQLite works for development)
-
-### Installation Steps
-
-1. **Clone the repository:**
+## 🚀 Quick Start
 
 ```bash
-git clone <repository-url>
-cd IDEEZA-Assessment
-```
-
-2. **Create and activate virtual environment:**
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
-```
-
-3. **Install dependencies:**
-
-```bash
-# For local development
+# 1. Install dependencies
 pip install -r requirements/local.txt
 
-# For production
-pip install -r requirements/production.txt
-```
-
-4. **Configure environment variables:**
-
-Create a `.env` file in the project root:
-
-```env
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-DATABASE_URL=sqlite:///db.sqlite3
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-```
-
-5. **Install and start Redis:**
-
-**Windows:**
-```bash
-# Download Redis from https://github.com/microsoftarchive/redis/releases
-# Or use Docker:
-docker run -d -p 6379:6379 redis:7
-```
-
-**Linux/Mac:**
-```bash
-# Ubuntu/Debian
-sudo apt-get install redis-server
-sudo systemctl start redis
-
-# macOS
-brew install redis
-brew services start redis
-
-# Or use Docker:
-docker run -d -p 6379:6379 redis:7
-```
-
-**Verify Redis is running:**
-```bash
-redis-cli ping
-# Should return: PONG
-
-# Or use the provided test script
-python test_redis_connection.py
-```
-
-6. **Run migrations:**
-
-```bash
+# 2. Run migrations
 python manage.py migrate
-```
 
-7. **Create sample data (optional):**
+# 3. Seed database
+python seed_quick.py
 
-```bash
-python manage.py shell
-```
-
-```python
-from analytics.models import User, Country, Blog, BlogView
-from django.utils import timezone
-import random
-
-# Create countries
-countries = [
-    Country.objects.create(name="USA", code="US"),
-    Country.objects.create(name="Canada", code="CA"),
-    Country.objects.create(name="UK", code="GB"),
-    Country.objects.create(name="Germany", code="DE"),
-]
-
-# Create users
-users = []
-for i in range(10):
-    user = User.objects.create(
-        username=f"user{i}",
-        email=f"user{i}@example.com"
-    )
-    users.append(user)
-
-# Create blogs
-blogs = []
-for user in users:
-    for j in range(random.randint(2, 8)):
-        blog = Blog.objects.create(
-            title=f"{user.username}'s Blog {j}",
-            content=f"Content for blog {j}",
-            author=user,
-            country=random.choice(countries)
-        )
-        blogs.append(blog)
-
-# Create views
-for blog in blogs:
-    view_count = random.randint(5, 50)
-    for _ in range(view_count):
-        BlogView.objects.create(
-            blog=blog,
-            user=random.choice(users),
-            country=random.choice(countries)
-        )
-
-print(f"Created {len(users)} users, {len(blogs)} blogs, and {BlogView.objects.count()} views")
-```
-
-8. **Run development server:**
-
-```bash
-# Uses local settings by default (configured in manage.py)
+# 4. Start server
 python manage.py runserver
 
-# Or explicitly specify settings
-python manage.py runserver --settings=ideeza_assessment.settings.local
+# 5. Open Swagger UI
+# http://localhost:8000/api/docs/
 ```
 
-The API will be available at `http://localhost:8000/analytics/`
+**For detailed installation instructions, see [INSTALLATION.md](INSTALLATION.md)**
 
-9. **Run Celery worker (optional, for async tasks):**
-
-```bash
-# Windows
-celery -A ideeza_assessment worker -l info --pool=solo
-
-# Linux/Mac
-celery -A ideeza_assessment worker -l info
-```
-
-10. **Run Celery Beat (optional, for scheduled tasks):**
+### Run Tests
 
 ```bash
-celery -A ideeza_assessment beat -l info
-```
-
----
-
-## 🐳 Docker Setup (Alternative)
-
-If you prefer using Docker, you can run the entire stack with one command:
-
-```bash
-# Start all services (PostgreSQL, Redis, Web)
-docker-compose up -d
-
-# Run migrations
-docker-compose exec web python manage.py migrate
-
-# Create superuser
-docker-compose exec web python manage.py createsuperuser
-
-# View logs
-docker-compose logs -f web
-
-# Stop all services
-docker-compose down
-```
-
-The API will be available at `http://localhost:8000/analytics/`
-
----
-
-## 🧪 Testing
-
-### Run all tests:
-
-```bash
+# Run all tests
 python manage.py test analytics.tests
-```
 
-### Run specific test modules:
-
-```bash
-# Service layer tests
-python manage.py test analytics.tests.test_services
-
-# API endpoint tests
-python manage.py test analytics.tests.test_views
-```
-
-### Run specific test classes:
-
-```bash
-# Service layer tests
-python manage.py test analytics.tests.test_services.TestBlogViewsAnalyticsService
-python manage.py test analytics.tests.test_services.TestTopAnalyticsService
-python manage.py test analytics.tests.test_services.TestPerformanceAnalyticsService
-
-# Dynamic filter tests
-python manage.py test analytics.tests.test_services.TestDynamicFilters
-
-# API endpoint tests
-python manage.py test analytics.tests.test_views.TestBlogViewsAnalyticsView
-python manage.py test analytics.tests.test_views.TestTopAnalyticsView
-python manage.py test analytics.tests.test_views.TestPerformanceAnalyticsView
-```
-
-### Test with coverage:
-
-```bash
+# Run with coverage
 coverage run --source='analytics' manage.py test analytics.tests
 coverage report
 ```
@@ -479,42 +265,38 @@ coverage report
 
 ### Service Layer Pattern
 
-The project uses a **service layer architecture** to separate business logic from views:
-
 - **`models.py`** - Data models (User, Country, Blog, BlogView)
 - **`services.py`** - Business logic and analytics functions
 - **`views.py`** - HTTP request/response handling
 - **`serializers.py`** - Request validation and response serialization
 - **`tests/`** - Comprehensive test coverage
 
-### Infrastructure
-
-- **Redis**: Used for Celery message broker, result backend, and Django caching
-- **Celery**: Async task processing and scheduled jobs (django-celery-beat)
-- **PostgreSQL/SQLite**: Primary database (PostgreSQL for production, SQLite for dev)
-- **Docker**: Optional containerized deployment with docker-compose
-
 ### Database Optimization
 
 **Preventing N+1 Queries:**
-
 - `select_related()` for forward foreign keys
 - `prefetch_related()` for reverse foreign keys
 - Strategic use of `values()` and `annotate()`
 - Database indexes on frequently queried fields
 
-**Example from `services.py`:**
-
+**Example:**
 ```python
 queryset = BlogView.objects.select_related(
-    'country',        # Joins Country table
-    'blog',           # Joins Blog table
-    'blog__author'    # Joins User table through Blog
+    'country',
+    'blog',
+    'blog__author'
 ).values('country__name').annotate(
     blog_count=Count('blog__id', distinct=True),
     view_count=Count('id')
 )
 ```
+
+### Infrastructure
+
+- **Redis:** Celery message broker, result backend, and Django caching
+- **Celery:** Async task processing and scheduled jobs
+- **PostgreSQL/SQLite:** Primary database
+- **Docker:** Containerized deployment
 
 ---
 
@@ -523,42 +305,34 @@ queryset = BlogView.objects.select_related(
 ```
 IDEEZA-Assessment/
 ├── analytics/
-│   ├── migrations/         # Database migrations
-│   ├── tests/              # Organized test suite
-│   │   ├── __init__.py
-│   │   ├── test_services.py    # Service layer tests
-│   │   └── test_views.py       # API endpoint tests
-│   ├── models.py           # Database models
-│   ├── services.py         # Business logic layer
-│   ├── views.py            # API views
-│   ├── serializers.py      # Request/response serializers
-│   ├── urls.py             # Analytics URL routing
-│   └── admin.py            # Django admin configuration
+│   ├── management/commands/
+│   │   └── seed_data.py
+│   ├── tests/
+│   │   ├── test_services.py
+│   │   └── test_views.py
+│   ├── models.py
+│   ├── services.py
+│   ├── views.py
+│   ├── serializers.py
+│   └── urls.py
 ├── ideeza_assessment/
-│   ├── settings/           # Split settings for environments
-│   │   ├── base.py         # Common settings
-│   │   ├── local.py        # Development settings
-│   │   └── production.py   # Production settings
-│   ├── celery.py           # Celery configuration
-│   ├── urls.py             # Main URL configuration
-│   ├── wsgi.py             # WSGI configuration
-│   ├── asgi.py             # ASGI configuration
-│   └── __init__.py         # Celery app initialization
-├── requirements/           # Organized dependencies
-│   ├── base.txt            # Core dependencies
-│   ├── local.txt           # Development dependencies
-│   └── production.txt      # Production dependencies
-├── manage.py                   # Django management script
-├── .env                        # Environment variables
-├── db.sqlite3                  # SQLite database
-├── docker-compose.yml          # Docker configuration (includes Redis & PostgreSQL)
-├── Dockerfile                  # Docker image definition
-├── test_redis_connection.py    # Redis connection test script
-├── README.md                   # Main documentation
-├── QUICKSTART.md               # 5-minute setup guide
-├── PAGINATION.md               # Pagination feature documentation
-├── REDIS_SETUP.md              # Redis installation and setup guide
-└── SETUP_CHECKLIST.md          # Complete setup verification checklist
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── local.py
+│   │   └── production.py
+│   ├── celery.py
+│   └── urls.py
+├── requirements/
+│   ├── base.txt
+│   ├── local.txt
+│   └── production.txt
+├── .env
+├── docker-compose.yml
+├── manage.py
+├── seed_quick.py
+├── verify_setup.py
+├── INSTALLATION.md
+└── README.md
 ```
 
 ---
@@ -593,7 +367,8 @@ IDEEZA-Assessment/
 ✅ Split settings (base/local/production)  
 ✅ Organized requirements directory  
 ✅ Celery integration for async tasks  
-✅ Organized test suite structure
+✅ Organized test suite structure  
+✅ Interactive API documentation (Swagger/ReDoc)
 
 ---
 
@@ -601,17 +376,6 @@ IDEEZA-Assessment/
 
 **Backend Developer Assessment**  
 IDEEZA - Senior Backend Developer Position
-
----
-
-## 📚 Additional Documentation
-
-- [QUICKSTART.md](QUICKSTART.md) - 5-minute setup guide
-- [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) - Complete setup verification checklist
-- [PAGINATION.md](PAGINATION.md) - Detailed pagination feature documentation
-- [REDIS_SETUP.md](REDIS_SETUP.md) - Redis installation and configuration guide
-- [BUG_ANALYSIS.md](BUG_ANALYSIS.md) - Analysis of common bugs and how they're avoided
-- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Complete implementation overview
 
 ---
 

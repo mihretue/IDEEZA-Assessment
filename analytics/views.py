@@ -97,8 +97,8 @@ class BlogViewsAnalyticsView(APIView):
                 object_type=validated_data['object_type'],
                 range_type=validated_data.get('range', 'month'),
                 filters=validated_data.get('filters'),
-                start_date=validated_data.get('start_date'),
-                end_date=validated_data.get('end_date')
+                start_date=validated_data.get('date_start'),
+                end_date=validated_data.get('date_end')
             )
             
             # Serialize results
@@ -166,8 +166,8 @@ class TopAnalyticsView(APIView):
                 top=validated_data['top'],
                 range_type=validated_data.get('range', 'all'),
                 filters=validated_data.get('filters'),
-                start_date=validated_data.get('start_date'),
-                end_date=validated_data.get('end_date')
+                start_date=validated_data.get('date_start'),
+                end_date=validated_data.get('date_end')
             )
             
             # Serialize results
@@ -232,8 +232,8 @@ class PerformanceAnalyticsView(APIView):
                 compare=validated_data['compare'],
                 user_id=validated_data.get('user_id'),
                 filters=validated_data.get('filters'),
-                start_date=validated_data.get('start_date'),
-                end_date=validated_data.get('end_date')
+                start_date=validated_data.get('date_start'),
+                end_date=validated_data.get('date_end')
             )
             
             # Serialize results
