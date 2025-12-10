@@ -47,20 +47,34 @@ pip install -r requirements/production.txt
 
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Copy the example environment file and configure it:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env with your settings
+```
+
+The `.env` file should contain:
 
 ```env
 # Django
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=your-secret-key-here-change-this-in-production
 DEBUG=True
 
 # Database (optional, defaults to SQLite)
 DATABASE_URL=sqlite:///db.sqlite3
 
-# Redis (optional, for Celery)
+# Redis (for Celery and caching)
 CELERY_BROKER_URL=redis://localhost:6379/0
 CELERY_RESULT_BACKEND=redis://localhost:6379/0
+
+# API Settings (optional)
+API_PAGE_SIZE=100
 ```
+
+**Note:** The `.env` file is in `.gitignore` and will not be committed to Git for security.
 
 ### 5. Install and Configure Redis
 

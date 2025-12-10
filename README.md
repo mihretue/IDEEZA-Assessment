@@ -233,16 +233,20 @@ All endpoints support dynamic filtering with JSON-based filters.
 # 1. Install dependencies
 pip install -r requirements/local.txt
 
-# 2. Run migrations
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your settings (optional, defaults work)
+
+# 3. Run migrations
 python manage.py migrate
 
-# 3. Seed database
+# 4. Seed database
 python seed_quick.py
 
-# 4. Start server
+# 5. Start server
 python manage.py runserver
 
-# 5. Open Swagger UI
+# 6. Open Swagger UI
 # http://localhost:8000/api/docs/
 ```
 
